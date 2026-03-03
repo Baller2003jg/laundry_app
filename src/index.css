@@ -32,7 +32,7 @@ body{
 .machine .meta .desc{font-size:12px;color:var(--muted)}
 .footer{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
 .controls{display:flex;gap:10px}
-.btn{background:var(--bg);color:var(--accent);border:none;padding:8px 12px;border-radius:8px;font-weight:600;cursor:pointer}
+.btn{background:var(--bg);color:var(--accent);border:none;padding:14px 20px;border-radius:8px;font-weight:600;cursor:pointer;font-size:1rem;min-height:40px}
 .btn.ghost{background:transparent;border:1px solid var(--card);color:var(--bg)}
 .note{font-size:13px;color:var(--muted)}
 
@@ -78,11 +78,12 @@ body{
   border-color: var(--gold);
 }
 .login-btn {
-  font-size: 1.1rem;
-  padding: 12px 0;
+  font-size: 1.2rem;
+  padding: 16px 0;
   border-radius: 8px;
   width: 100%;
   margin-top: 8px;
+  min-height: 52px;
 }
 @media (max-width: 600px) {
   .large-login {
@@ -95,8 +96,9 @@ body{
     padding: 16px 12px;
   }
   .login-btn {
-    font-size: 1.2rem;
-    padding: 16px 0;
+    font-size: 1.3rem;
+    padding: 18px 0;
+    min-height: 56px;
   }
 }
 /* Navigation bar styles */

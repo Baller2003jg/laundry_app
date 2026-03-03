@@ -51,7 +51,7 @@ export default function App() {
   const [dryerSettings, setDryerSettings] = useState<Record<string, DryerState>>({});
   const [selectedDryers, setSelectedDryers] = useState<string[]>([]);
 
-  const maxPerGroup = 5;
+  const maxPerGroup = 2;
   const INITIAL_SECONDS = 30 * 60;
 
   function toggle(items: string[], setItems: (s: string[]) => void, id: string) {
