@@ -5,6 +5,7 @@ import MachineSelector from './components/MachineSelector';
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+  const [activeTab, setActiveTab] = useState<'machines' | 'qr'>('machines');
 
   // Auto-login if user is saved in localStorage
   useEffect(() => {
@@ -27,23 +28,19 @@ export default function App() {
     type: WashType;
     sendText: boolean;
     phone: string;
-    phoneConfirmed: boolean;
     running: boolean;
     remaining: number;
     intervalId?: number | null;
-    confirmTimeoutId?: number | null;
-    confirmStartTime?: number | null;
   };
   const [washerSettings, setWasherSettings] = useState<Record<string, WasherState>>({});
   const [selectedWashers, setSelectedWashers] = useState<string[]>([]);
 
   // Dryer state
-  type DryerType = 'quick' | 'wrinkle';
+  type DryerType = 'quick' | 'wrinkle' | 'regular';
   type DryerState = {
     type: DryerType;
     sendText: boolean;
     phone: string;
-    phoneConfirmed: boolean;
     running: boolean;
     remaining: number;
     intervalId?: number | null;
@@ -51,7 +48,7 @@ export default function App() {
   const [dryerSettings, setDryerSettings] = useState<Record<string, DryerState>>({});
   const [selectedDryers, setSelectedDryers] = useState<string[]>([]);
 
-  const maxPerGroup = 5;
+  const maxPerGroup = 2;
   const INITIAL_SECONDS = 30 * 60;
 
   function toggle(items: string[], setItems: (s: string[]) => void, id: string) {
@@ -67,7 +64,7 @@ export default function App() {
       setItems([...items, id]);
       setWasherSettings((prev) => ({
         ...prev,
-        [id]: prev[id] ?? { type: 'regular', sendText: false, phone: '', phoneConfirmed: false, running: false, remaining: INITIAL_SECONDS, intervalId: null, confirmTimeoutId: null, confirmStartTime: null }
+        [id]: prev[id] ?? { type: 'regular', sendText: false, phone: '', running: false, remaining: INITIAL_SECONDS, intervalId: null }
       }));
     }
   }
@@ -99,23 +96,96 @@ export default function App() {
     setSelectedWashers((prev) => prev.filter((p) => p !== id));
   }
 
+  function sendTextNotification(phone: string, machineType: string) {
+    if (phone && /^\d{10}$/.test(phone)) {
+      // In a real app, this would call an SMS API (like Twilio)
+      console.log(`Sending SMS to ${phone}: Your ${machineType} is done!`);
+      alert(`Text sent to ${phone}: Laundry done`);
+    }
+  }
+
   function submit() {
     // Start all selected washers
     setWasherSettings((prev) => {
       const updated = { ...prev };
       for (const id of selectedWashers) {
         if (!updated[id]?.running) {
+          const intervalId = window.setInterval(() => {
+            setWasherSettings((current) => {
+              const machine = current[id];
+              if (!machine) return current;
+              
+              const newRemaining = machine.remaining - 1;
+              
+              if (newRemaining <= 0) {
+                // Timer done - send notification
+                if (machine.sendText && machine.phone) {
+                  sendTextNotification(machine.phone, 'washer');
+                }
+                if (machine.intervalId) window.clearInterval(machine.intervalId);
+                return {
+                  ...current,
+                  [id]: { ...machine, remaining: 0, intervalId: null }
+                };
+              }
+              
+              return {
+                ...current,
+                [id]: { ...machine, remaining: newRemaining }
+              };
+            });
+          }, 1000);
+          
           updated[id] = {
             ...updated[id],
             running: true,
-            // Optionally, set remaining time if needed
+            intervalId
           };
         }
       }
       return updated;
     });
-    // Optionally, start timers here if needed for UI
-    // (for test, just setting running: true is enough)
+    
+    // Start all selected dryers
+    setDryerSettings((prev) => {
+      const updated = { ...prev };
+      for (const id of selectedDryers) {
+        if (!updated[id]?.running) {
+          const intervalId = window.setInterval(() => {
+            setDryerSettings((current) => {
+              const machine = current[id];
+              if (!machine) return current;
+              
+              const newRemaining = machine.remaining - 1;
+              
+              if (newRemaining <= 0) {
+                // Timer done - send notification
+                if (machine.sendText && machine.phone) {
+                  sendTextNotification(machine.phone, 'dryer');
+                }
+                if (machine.intervalId) window.clearInterval(machine.intervalId);
+                return {
+                  ...current,
+                  [id]: { ...machine, remaining: 0, intervalId: null }
+                };
+              }
+              
+              return {
+                ...current,
+                [id]: { ...machine, remaining: newRemaining }
+              };
+            });
+          }, 1000);
+          
+          updated[id] = {
+            ...updated[id],
+            running: true,
+            intervalId
+          };
+        }
+      }
+      return updated;
+    });
   }
 
   // Clean up intervals on unmount
@@ -147,192 +217,202 @@ export default function App() {
       <div className="app">
         <div className="header">
           <div>
-            <div className="title">Laundry room — machine selector</div>
-            <div className="subtitle">Choose up to {maxPerGroup} washers and up to {maxPerGroup} dryers currently in use.</div>
+            <div className="title">Laundry room</div>
+            <div className="tabs">
+              <button 
+                className={`tab ${activeTab === 'machines' ? 'active' : ''}`}
+                onClick={() => setActiveTab('machines')}
+              >
+                Machine Selector
+              </button>
+              <button 
+                className={`tab ${activeTab === 'qr' ? 'active' : ''}`}
+                onClick={() => setActiveTab('qr')}
+              >
+                Scan QR Code
+              </button>
+            </div>
+            {activeTab === 'machines' && (
+              <div className="subtitle">Choose up to {maxPerGroup} washers and up to {maxPerGroup} dryers currently in use.</div>
+            )}
           </div>
         </div>
-        <div className="panels">
-          <MachineSelector
-            title="Washers"
-            machines={washers.map((m) => ({ ...m, status: washerSettings[m.id]?.running ? (washerSettings[m.id]?.remaining > 0 ? `In use — ${formatTime(washerSettings[m.id].remaining)}` : 'In use — ready to complete') : undefined }))}
-            maxSelectable={maxPerGroup}
-            selected={selectedWashers}
-            onToggle={(id) => toggle(selectedWashers, setSelectedWashers, id)}
-            disabledIds={Object.entries(washerSettings).filter(([, v]) => v?.running).map(([k]) => k)}
-            renderSelected={(m) => {
-              const s = washerSettings[m.id];
-              if (!s) return null;
-              if (s.running) {
-                return (
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <div style={{ fontSize: 13 }}>{formatTime(s.remaining)}</div>
-                    <button className="btn ghost" onClick={() => completeWasher(m.id)}>Complete</button>
-                  </div>
-                );
-              }
-              const phoneValid = /^\d{10}$/.test(s.phone);
-              let phoneInputArea = null;
-              if (s.sendText) {
-                phoneInputArea = (
-                  <>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="\d*"
-                      maxLength={10}
-                      placeholder="Phone (10 digits)"
-                      value={s.phone}
-                      style={{ width: 120, fontSize: 13, border: phoneValid || !s.phone ? '1px solid #ccc' : '1px solid #e00' }}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/[^\d]/g, '');
-                        setWasherSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], phone: val, phoneConfirmed: false } }));
-                      }}
-                    />
-                    {phoneValid && !s.phoneConfirmed && (
-                      <button
-                        className="btn ghost"
-                        style={{ fontSize: 13, padding: '4px 8px' }}
-                        onClick={() => {
-                          if (window.confirm(`Confirm phone number: ${s.phone}`)) {
-                            setWasherSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], phoneConfirmed: true } }));
-                          }
+        {activeTab === 'machines' && (
+          <>
+            <div className="panels">
+              <MachineSelector
+                title="Washers"
+                machines={washers.map((m) => ({ ...m, status: washerSettings[m.id]?.running ? (washerSettings[m.id]?.remaining > 0 ? `In use — ${formatTime(washerSettings[m.id].remaining)}` : 'In use — ready to complete') : undefined }))}
+                maxSelectable={maxPerGroup}
+                selected={selectedWashers}
+                onToggle={(id) => toggle(selectedWashers, setSelectedWashers, id)}
+                disabledIds={Object.entries(washerSettings).filter(([, v]) => v?.running).map(([k]) => k)}
+                renderSelected={(m) => {
+                  const s = washerSettings[m.id];
+                  if (!s) return null;
+                  if (s.running) {
+                    return (
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <div style={{ fontSize: 13 }}>{formatTime(s.remaining)}</div>
+                        <button className="btn ghost" onClick={() => completeWasher(m.id)}>Complete</button>
+                      </div>
+                    );
+                  }
+                  const phoneValid = /^\d{10}$/.test(s.phone);
+                  let phoneInputArea = null;
+                  if (s.sendText) {
+                    phoneInputArea = (
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="\d*"
+                        maxLength={10}
+                        placeholder="Phone (10 digits)"
+                        value={s.phone}
+                        style={{ width: 120, fontSize: 13, border: phoneValid || !s.phone ? '1px solid #ccc' : '1px solid #e00' }}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/[^\d]/g, '');
+                          setWasherSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], phone: val } }));
                         }}
-                      >Confirm</button>
-                    )}
-                  </>
-                );
-              }
-              const disabled = s.running;
-              return (
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <select
-                    aria-label={`washer-options-${m.id}`}
-                    value={s.type}
-                    disabled={disabled}
-                    className={disabled ? 'option-disabled' : ''}
-                    onChange={(e) => setWasherSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], type: e.target.value as WashType, remaining: e.target.value === 'quick' ? 15 * 60 : INITIAL_SECONDS } }))}
-                  >
-                    <option value="rinse">Rinse only (10 min)</option>
-                    <option value="quick">Quick wash (15 min)</option>
-                    <option value="bedding">Bedding (40 min)</option>
-                    <option value="regular">Regular wash (30 min)</option>
-                  </select>
-                  <label style={{ fontSize: 13, opacity: disabled ? 0.5 : 1 }}>
-                    <input
-                      type="checkbox"
-                      checked={s.sendText}
-                      disabled={disabled}
-                      onChange={(e) => setWasherSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], sendText: e.target.checked } }))}
-                    />
-                    &nbsp;Send text when done
-                  </label>
-                  {!disabled && phoneInputArea}
-                </div>
-              );
-            }}
-          />
-          <MachineSelector
-            title="Dryers"
-            machines={dryers.map((m) => ({ ...m, status: dryerSettings[m.id]?.running ? (dryerSettings[m.id]?.remaining > 0 ? `In use — ${formatTime(dryerSettings[m.id].remaining)}` : 'In use — ready to complete') : undefined }))}
-            maxSelectable={maxPerGroup}
-            selected={selectedDryers}
-            onToggle={(id) => {
-              if (selectedDryers.includes(id)) {
-                if (dryerSettings[id]?.running) return;
-                setSelectedDryers(selectedDryers.filter((x) => x !== id));
-                setDryerSettings((prev) => {
-                  const copy = { ...prev };
-                  delete copy[id];
-                  return copy;
-                });
-              } else {
-                setSelectedDryers([...selectedDryers, id]);
-                setDryerSettings((prev) => ({
-                  ...prev,
-                  [id]: prev[id] ?? { type: 'quick', sendText: false, phone: '', phoneConfirmed: false, running: false, remaining: 20 * 60, intervalId: null }
-                }));
-              }
-            }}
-            disabledIds={Object.entries(dryerSettings).filter(([, v]) => v?.running).map(([k]) => k)}
-            renderSelected={(m) => {
-              const s = dryerSettings[m.id];
-              if (!s) return null;
-              if (s.running) {
-                return (
-                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <div style={{ fontSize: 13 }}>{formatTime(s.remaining)}</div>
-                    <button className="btn ghost" onClick={() => {
-                      if (s.intervalId) window.clearInterval(s.intervalId!);
-                      setDryerSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], running: false, remaining: s.type === 'quick' ? 15 * 60 : 20 * 60, intervalId: null } }));
-                      setSelectedDryers((prev) => prev.filter((p) => p !== m.id));
-                    }}>Complete</button>
-                  </div>
-                );
-              }
-              const phoneValid = /^\d{10}$/.test(s.phone);
-              let phoneInputArea = null;
-              if (s.sendText) {
-                phoneInputArea = (
-                  <>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      pattern="\d*"
-                      maxLength={10}
-                      placeholder="Phone (10 digits)"
-                      value={s.phone}
-                      style={{ width: 120, fontSize: 13, border: phoneValid || !s.phone ? '1px solid #ccc' : '1px solid #e00' }}
-                      onChange={(e) => {
-                        const val = e.target.value.replace(/[^\d]/g, '');
-                        setDryerSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], phone: val, phoneConfirmed: false } }));
-                      }}
-                    />
-                    {phoneValid && !s.phoneConfirmed && (
-                      <button
-                        className="btn ghost"
-                        style={{ fontSize: 13, padding: '4px 8px' }}
-                        onClick={() => {
-                          if (window.confirm(`Confirm phone number: ${s.phone}`)) {
-                            setDryerSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], phoneConfirmed: true } }));
-                          }
+                      />
+                    );
+                  }
+                  const disabled = s.running;
+                  return (
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <select
+                        aria-label={`washer-options-${m.id}`}
+                        value={s.type}
+                        disabled={disabled}
+                        className={disabled ? 'option-disabled' : ''}
+                        onChange={(e) => setWasherSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], type: e.target.value as WashType, remaining: e.target.value === 'quick' ? 15 * 60 : INITIAL_SECONDS } }))}
+                      >
+                        <option value="rinse">Rinse only (10 min)</option>
+                        <option value="quick">Quick wash (15 min)</option>
+                        <option value="bedding">Bedding (40 min)</option>
+                        <option value="regular">Regular wash (30 min)</option>
+                      </select>
+                      <label style={{ fontSize: 13, opacity: disabled ? 0.5 : 1 }}>
+                        <input
+                          type="checkbox"
+                          checked={s.sendText}
+                          disabled={disabled}
+                          onChange={(e) => setWasherSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], sendText: e.target.checked } }))}
+                        />
+                        &nbsp;Send text when done
+                      </label>
+                      {!disabled && phoneInputArea}
+                    </div>
+                  );
+                }}
+              />
+              <MachineSelector
+                title="Dryers"
+                machines={dryers.map((m) => ({ ...m, status: dryerSettings[m.id]?.running ? (dryerSettings[m.id]?.remaining > 0 ? `In use — ${formatTime(dryerSettings[m.id].remaining)}` : 'In use — ready to complete') : undefined }))}
+                maxSelectable={maxPerGroup}
+                selected={selectedDryers}
+                onToggle={(id) => {
+                  if (selectedDryers.includes(id)) {
+                    if (dryerSettings[id]?.running) return;
+                    setSelectedDryers(selectedDryers.filter((x) => x !== id));
+                    setDryerSettings((prev) => {
+                      const copy = { ...prev };
+                      delete copy[id];
+                      return copy;
+                    });
+                  } else {
+                    setSelectedDryers([...selectedDryers, id]);
+                    setDryerSettings((prev) => ({
+                      ...prev,
+                      [id]: prev[id] ?? { type: 'regular', sendText: false, phone: '', running: false, remaining: 40 * 60, intervalId: null }
+                    }));
+                  }
+                }}
+                disabledIds={Object.entries(dryerSettings).filter(([, v]) => v?.running).map(([k]) => k)}
+                renderSelected={(m) => {
+                  const s = dryerSettings[m.id];
+                  if (!s) return null;
+                  if (s.running) {
+                    return (
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                        <div style={{ fontSize: 13 }}>{formatTime(s.remaining)}</div>
+                        <button className="btn ghost" onClick={() => {
+                          if (s.intervalId) window.clearInterval(s.intervalId!);
+                          const newRemaining = s.type === 'quick' ? 15 * 60 : s.type === 'wrinkle' ? 20 * 60 : 40 * 60;
+                          setDryerSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], running: false, remaining: newRemaining, intervalId: null } }));
+                          setSelectedDryers((prev) => prev.filter((p) => p !== m.id));
+                        }}>Complete</button>
+                      </div>
+                    );
+                  }
+                  const phoneValid = /^\d{10}$/.test(s.phone);
+                  let phoneInputArea = null;
+                  if (s.sendText) {
+                    phoneInputArea = (
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        pattern="\d*"
+                        maxLength={10}
+                        placeholder="Phone (10 digits)"
+                        value={s.phone}
+                        style={{ width: 120, fontSize: 13, border: phoneValid || !s.phone ? '1px solid #ccc' : '1px solid #e00' }}
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/[^\d]/g, '');
+                          setDryerSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], phone: val } }));
                         }}
-                      >Confirm</button>
-                    )}
-                  </>
-                );
-              }
-              const disabled = s.running;
-              return (
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                  <select
-                    aria-label={`dryer-options-${m.id}`}
-                    value={s.type}
-                    disabled={disabled}
-                    className={disabled ? 'option-disabled' : ''}
-                    onChange={(e) => setDryerSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], type: e.target.value as DryerType, remaining: e.target.value === 'quick' ? 15 * 60 : 20 * 60 } }))}
-                  >
-                    <option value="quick">Quick dry (15 min)</option>
-                    <option value="wrinkle">Wrinkle release (20 min)</option>
-                  </select>
-                  <label style={{ fontSize: 13, opacity: disabled ? 0.5 : 1 }}>
-                    <input
-                      type="checkbox"
-                      checked={s.sendText}
-                      disabled={disabled}
-                      onChange={(e) => setDryerSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], sendText: e.target.checked } }))}
-                    />
-                    &nbsp;Send text when done
-                  </label>
-                  {!disabled && phoneInputArea}
-                </div>
-              );
-            }}
-          />
+                      />
+                    );
+                  }
+                  const disabled = s.running;
+                  return (
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                      <select
+                        aria-label={`dryer-options-${m.id}`}
+                        value={s.type}
+                        disabled={disabled}
+                        className={disabled ? 'option-disabled' : ''}
+                        onChange={(e) => {
+                          const val = e.target.value as DryerType;
+                          const remaining = val === 'quick' ? 15 * 60 : val === 'wrinkle' ? 20 * 60 : 40 * 60;
+                          setDryerSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], type: val, remaining } }));
+                        }}
+                      >
+                        <option value="quick">Quick dry (15 min)</option>
+                        <option value="wrinkle">Wrinkle release (20 min)</option>
+                        <option value="regular">Regular dry (40 min)</option>
+                      </select>
+                      <label style={{ fontSize: 13, opacity: disabled ? 0.5 : 1 }}>
+                        <input
+                          type="checkbox"
+                          checked={s.sendText}
+                          disabled={disabled}
+                          onChange={(e) => setDryerSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], sendText: e.target.checked } }))}
+                        />
+                        &nbsp;Send text when done
+                      </label>
+                      {!disabled && phoneInputArea}
+                    </div>
+                  );
+                }}
+              />
+            </div>
+            <div className="footer">
+              <button className="btn primary" onClick={submit}>Submit machines</button>
+              <button className="btn secondary" onClick={resetAll}>Reset all</button>
+            </div>
+          </>
+        )}
+        {activeTab === 'qr' && (
+        <div className="qr-content">
+          <div className="qr-placeholder">
+            <div className="qr-icon">📷</div>
+            <h2>Scan QR Code</h2>
+            <p>Point your camera at the QR code on the machine to quickly select it.</p>
+            <button className="btn primary" style={{ marginTop: '16px' }}>Open Camera</button>
+          </div>
         </div>
-        <div className="footer">
-          <button className="btn primary" onClick={submit}>Submit machines</button>
-          <button className="btn secondary" onClick={resetAll}>Reset all</button>
-        </div>
+        )}
       </div>
     </>
   );
