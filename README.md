@@ -1,6 +1,6 @@
 # Laundry selector app
 
-This is a small React + Vite app that demonstrates selecting up to 5 washers and up to 5 dryers.
+This is a small React + Vite app that demonstrates selecting up to 2 washers and up to 2 dryers.
 
 Quick start (Windows PowerShell):
 
