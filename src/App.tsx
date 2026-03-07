@@ -82,6 +82,28 @@ export default function App() {
     setSelectedDryers([]);
   }
 
+  function logout() {
+    // Clear all running timers
+    Object.values(washerSettings).forEach((s) => {
+      if (s.intervalId) window.clearInterval(s.intervalId!);
+    });
+    Object.values(dryerSettings).forEach((s) => {
+      if (s.intervalId) window.clearInterval(s.intervalId!);
+    });
+    
+    // Clear localStorage
+    localStorage.removeItem('laundryAppUser');
+    
+    // Reset all state
+    setLoggedIn(false);
+    setUserEmail('');
+    setWasherSettings({});
+    setDryerSettings({});
+    setSelectedWashers([]);
+    setSelectedDryers([]);
+    setActiveTab('machines');
+  }
+
   function formatTime(s: number) {
     const mm = Math.floor(s / 60);
     const ss = Math.floor(s % 60);
@@ -212,6 +234,9 @@ export default function App() {
           <a href="#" className="nav-link active">Home</a>
           <a href="#" className="nav-link">Locations</a>
           <a href="#" className="nav-link">Contact Us</a>
+          <button className="btn secondary" onClick={logout} style={{ marginLeft: '16px' }}>
+            Logout
+          </button>
         </div>
       </nav>
       <div className="app">
