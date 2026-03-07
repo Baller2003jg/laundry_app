@@ -8,7 +8,8 @@ Experience the Laundry App in action!
 
 https://github.com/user-attachments/assets/01f1618f-2712-426e-9323-437cba6cbf43
 
-** ← *Add your deployed URL here*
+http://localhost:5173/  
+Deploy with this link
 
 ---
 
