@@ -72,16 +72,18 @@ npm run deploy
 
 ## Screenshots
 
-*Add screenshots of your app here once deployed*
 
 ### Login Screen
-![Login Screen](#)
+<img width="1385" height="655" alt="logn" src="https://github.com/user-attachments/assets/65a815e6-9aeb-45a1-bf43-b064f3b2ac8c" />
+
 
 ### Machine Dashboard
-![Dashboard](#)
+<img width="1348" height="818" alt="machines" src="https://github.com/user-attachments/assets/ce75f88c-94ba-47b9-bc7f-e8bdd7db05fa" />
+
 
 ### Active Timers
-![Timers](#)
+<img width="437" height="75" alt="machine timer" src="https://github.com/user-attachments/assets/5fdee5e5-03ac-4299-927b-5c4d90e63f8f" />
+
 
 ---
 
