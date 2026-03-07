@@ -28,6 +28,12 @@ Welcome to the Laundry App documentation! This folder contains comprehensive gui
   - Quick deploy guides for popular platforms
   - Demo screenshots
 
+### Requirements
+- **[Requirements Folder](../requirements/)** - Project requirements and specifications
+  - Software Requirements Specification (SRS)
+  - System features and constraints
+  - Functional and non-functional requirements
+
 ---
 
 ## Quick Links
@@ -37,6 +43,7 @@ Welcome to the Laundry App documentation! This folder contains comprehensive gui
 | [USER_GUIDE.md](USER_GUIDE.md) | Learn how to use the app | End users |
 | [INSTALL.md](INSTALL.md) | Installation & development setup | Developers |
 | [DEMO.md](DEMO.md) | Live demo and deployment | Everyone |
+| [../requirements/](../requirements/) | Project requirements (SRS) | Project stakeholders |
 
 ---
 
