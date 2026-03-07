@@ -365,11 +365,17 @@ Appendix A: Glossary
 A QR Code is a two-dimensional barcode used by the application to uniquely identify each washer and dryer. When scanned, the QR code provides encoded information that allows the app to retrieve the machine’s status and enable appropriate control actions. The Internet of Things refers to a network of physical devices—such as washers and dryers—that are equipped with sensors, software, and network connectivity, enabling them to send and receive data through the app. Firebase is Google’s real-time cloud database and authentication service used by the application to manage user login credentials, machine data, and communication between the app and connected laundry machines. ZXing is an open-source QR code scanning library used by the application to interpret QR codes on washers and dryers and translate them into machine identifiers recognized by the backend.
 Appendix B: Analysis Models
 Use-Case Diagram
- 
+ <img width="616" height="521" alt="use" src="https://github.com/user-attachments/assets/6f678668-b387-4278-ad92-79e2513b02ef" />
+
 Database Diagram
- 
+ <img width="876" height="441" alt="data" src="https://github.com/user-attachments/assets/d1115085-f838-44df-8e93-f07f206958ea" />
+
 Entity Relationship Diagram
- 
+<img width="393" height="589" alt="er" src="https://github.com/user-attachments/assets/82f48e5e-7fc9-4a01-8f4f-bbde4895990c" />
+
+Gantt Chart
+ <img width="1920" height="1440" alt="HTU_Laundry_App_Gantt_Visual" src="https://github.com/user-attachments/assets/6387c990-d91e-4129-9c97-655d2f4a9f68" />
+
 Appendix C: Issues List
 The system is currently integrating the QR scanning library ZXing. Testing of machine API control via QR ID is to be determined, and confirmation of the Firebase connection with the IoT devices is also to be determined.
 
