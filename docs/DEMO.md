@@ -4,7 +4,12 @@ Experience the Laundry App in action!
 
 ## 🌐 Demo Link
 
-**[Launch Live Demo](#)** ← *Add your deployed URL here*
+**
+
+https://github.com/user-attachments/assets/01f1618f-2712-426e-9323-437cba6cbf43
+
+http://localhost:5173/  
+Deploy with this link
 
 ---
 
