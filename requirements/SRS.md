@@ -1,60 +1,48 @@
 # Software Requirements Specification (SRS)
 
-## Laundry App
-[jadyngray_SRS_.docx](https://github.com/user-attachments/files/25806870/jadyngray_SRS_.docx)
+## Huston-Tillotson University Laundry App
 
-Software Requirements Specification (SRS) 
-PROJECT TITLE:  Huston-Tillotson University Laundry App			
-PROJECT DEVELOPER: Jadyn Gray		 	
-PROJECT REPOSITORY (GITHUB LINK): https://github.com/Baller2003jg/laundry_app		
+**PROJECT TITLE:** Huston-Tillotson University Laundry App  
+**PROJECT DEVELOPER:** Jadyn Gray  
+**PROJECT REPOSITORY:** https://github.com/Baller2003jg/laundry_app  
+**CURRENT VERSION:** 1.3 (March 6, 2026)
 
- 
+---
 
-Table of Contents
-Contents
-Table of Contents	2
-Revision History	4
-Jadyn Gray               11/14/25                        Draft                     1.0	4
-1. Introduction	5
-1.1 Purpose	5
-1.2 Document Conventions	5
-1.3 Intended Audience and Reading Suggestions	5
-1.4 Project Scope	5
-1.5 References	5
-2. Overall Description	6
-2.1 Product Perspective	6
-2.2 Product Features	6
-2.3 User Classes and Characteristics	6
-2.4 Operating Environment	6
-2.5 Design and Implementation Constraints	6
-2.6 User Documentation	6
-2.7 Assumptions and Dependencies	6
-3. System Features	7
-4. External Interface Requirements	11
-4.1 User Interfaces	11
-4.2 Hardware Interfaces	11
-4.3 Software Interfaces	11
-4.4 Communications Interfaces	11
-5. Other Nonfunctional Requirements	11
-5.1 Performance Requirements	11
-5.2 Safety Requirements	11
-5.3 Security Requirements	12
-5.4 Software Quality Attributes	12
-6. Other Requirements	12
-Appendix A: Glossary	12
-Appendix B: Analysis Models	12
-Appendix C: Issues List	13
+## Table of Contents
 
- 
+1. [Introduction](#1-introduction)
+   - 1.1 Purpose
+   - 1.2 Document Conventions
+   - 1.3 Intended Audience and Reading Suggestions
+   - 1.4 Project Scope
+   - 1.5 References
+2. [Overall Description](#2-overall-description)
+   - 2.1 Product Perspective
+   - 2.2 Product Features
+   - 2.3 User Classes and Characteristics
+   - 2.4 Operating Environment
+   - 2.5 Design and Implementation Constraints
+   - 2.6 User Documentation
+   - 2.7 Assumptions and Dependencies
+3. [System Features](#3-system-features)
+4. [External Interface Requirements](#4-external-interface-requirements)
+5. [Other Nonfunctional Requirements](#5-other-nonfunctional-requirements)
+6. [Other Requirements](#6-other-requirements)
+7. [Appendices](#appendices)
 
-Revision History
-Name	Date	Reason for Changes	Version
-Jadyn Gray               11/14/25                        Draft                     1.0
-Jadyn Gray               11/20/25           Bullet point changes      1.1
-Jadyn Gray               11/30/25                Update diagrams       1.2
-System Update            03/06/26           Reflect implemented features   1.3
+---
 
- 
+## Revision History
+
+| Name | Date | Reason for Changes | Version |
+|------|------|-------------------|---------|
+| Jadyn Gray | 11/14/25 | Initial draft | 1.0 |
+| Jadyn Gray | 11/20/25 | Bullet point changes | 1.1 |
+| Jadyn Gray | 11/30/25 | Update diagrams | 1.2 |
+| System Update | 03/06/26 | Reflect implemented features | 1.3 |
+
+---
 1. Introduction
 1.1 Purpose
 The Huston-Tillotson Laundry App is a mobile application designed to automate and control the dorm laundry units for the students at HT. This app enables students to remotely watch the washer and dryer availability, track the cycle times, and receive notifications when the laundry is done. The purpose of this system is to reduce wasted time checking for available machine and to provide an efficient laundry experience for the students, as well as keeping the laundry room as clean as possible.
