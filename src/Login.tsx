@@ -36,6 +36,7 @@ export default function Login({ onLogin }: LoginProps) {
 
   return (
     <div className="login-container large-login">
+      <h1 style={{ textAlign: 'center', marginBottom: 8, marginTop: 0 }}>HT Laundry app</h1>
       <h2>Student Login</h2>
       <form className="login-form" onSubmit={handleSubmit}>
         <div className="form-group">
