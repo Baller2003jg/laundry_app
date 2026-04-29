@@ -75,6 +75,12 @@ body{
 .note{font-size:13px;color:var(--muted)}
 
 /* Login screen styles */
+.login-htu-logo {
+  display: block;
+  width: 220px;
+  border-radius: 8px;
+  margin: 0 auto 20px;
+}
 .large-login {
   max-width: 400px;
   margin: 48px auto;
@@ -138,6 +144,14 @@ body{
   }
 }
 /* Navigation bar styles */
+.nav-htu-logo {
+  height: 52px;
+  width: auto;
+  border-radius: 8px;
+  margin: 6px 16px;
+  display: block;
+  background: transparent;
+}
 .navbar {
   width: 100%;
   background: var(--nav-bg);
@@ -256,6 +270,116 @@ body{
   .note{font-size:13px}
 }
 .machine .option-disabled{background:#222;color:#888;pointer-events:none;}
+
+/* Machine options card */
+.machine-options{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  background:rgba(0,0,0,0.18);
+  border-radius:8px;
+  padding:10px 12px;
+  border:1px solid rgba(255,215,0,0.15);
+  width:100%;
+}
+.cycle-select-wrapper{position:relative;width:100%}
+.cycle-select-wrapper::after{
+  content:'▾';
+  position:absolute;
+  right:10px;
+  top:50%;
+  transform:translateY(-50%);
+  color:var(--gold);
+  pointer-events:none;
+  font-size:14px;
+  line-height:1;
+}
+.cycle-select{
+  width:100%;
+  appearance:none;
+  -webkit-appearance:none;
+  background:rgba(0,0,0,0.28);
+  color:#fff;
+  border:1px solid rgba(255,215,0,0.4);
+  border-radius:8px;
+  padding:9px 32px 9px 12px;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  transition:border-color 0.2s, box-shadow 0.2s;
+}
+.cycle-select:hover{border-color:var(--gold)}
+.cycle-select:focus{
+  outline:none;
+  border-color:var(--gold);
+  box-shadow:0 0 0 2px rgba(255,215,0,0.2);
+}
+.cycle-select option{background:#3a0a10;color:#fff}
+.text-notify-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.text-toggle-label{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-size:13px;
+  color:var(--muted);
+  cursor:pointer;
+  user-select:none;
+  font-weight:500;
+}
+.text-toggle-label input[type=checkbox]{
+  accent-color:var(--gold);
+  width:16px;
+  height:16px;
+  cursor:pointer;
+}
+.phone-input{
+  flex:1;
+  min-width:130px;
+  background:rgba(0,0,0,0.25);
+  color:#fff;
+  border:1px solid rgba(255,215,0,0.3);
+  border-radius:8px;
+  padding:8px 12px;
+  font-size:13px;
+  transition:border-color 0.2s, box-shadow 0.2s;
+}
+.phone-input::placeholder{color:rgba(255,255,255,0.35)}
+.phone-input:focus{
+  outline:none;
+  border-color:var(--gold);
+  box-shadow:0 0 0 2px rgba(255,215,0,0.15);
+}
+.phone-input.invalid{border-color:#e05555}
+
+/* Remote Control tab */
+.tab.remote-tab { border-color: var(--gold); color: var(--gold); }
+.tab.remote-tab.active { background: var(--gold); color: #1a1a1a; }
+.remote-panel { padding: 32px 24px; }
+.remote-title { color: var(--gold); margin: 0 0 6px; font-size: 1.4rem; }
+.remote-subtitle { color: var(--muted); margin: 0 0 24px; font-size: 0.95rem; }
+.remote-machines { display: flex; flex-wrap: wrap; gap: 20px; }
+.remote-card {
+  background: var(--card);
+  border: 2px solid var(--gold);
+  border-radius: 14px;
+  padding: 22px 24px;
+  min-width: 200px;
+  flex: 1 1 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 2px 12px rgba(123,47,58,0.15);
+}
+.remote-card.running { border-color: #4caf50; }
+.remote-card.paused  { border-color: var(--gold); }
+.remote-card-name { font-weight: 700; font-size: 1.05rem; color: var(--gold); letter-spacing: 0.04em; }
+.remote-card-type { font-size: 0.9rem; color: var(--muted); }
+.remote-card-timer { font-size: 2rem; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
+.remote-card-status { font-size: 0.85rem; font-weight: 600; }
+.remote-card.running .remote-card-status { color: #4caf50; }
+.remote-card.paused  .remote-card-status { color: var(--gold); }
+.remote-card-actions { margin-top: 8px; }
+.remote-btn { width: 100%; font-size: 1rem; padding: 10px 0; }
 
 /* QR Code Scanner styles */
 .qr-content{padding:40px 20px;text-align:center}

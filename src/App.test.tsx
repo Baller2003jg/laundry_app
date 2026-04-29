@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, describe, it, expect, vi } from 'vitest'
 import App from './App'
 
-vi.mock('./firebase', () => ({ db: null }))
+vi.mock('./firebase', () => ({ db: null, auth: null }))
 
 afterEach(() => {
   cleanup()

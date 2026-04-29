@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase } from 'firebase/database';
+import { getAuth } from 'firebase/auth';
 
 // ─────────────────────────────────────────────────────────────────
 // SETUP INSTRUCTIONS (one-time, free):
@@ -20,12 +21,14 @@ const firebaseConfig = {
 };
 
 let db: ReturnType<typeof getDatabase> | null = null;
+let auth: ReturnType<typeof getAuth> | null = null;
 
 try {
   const app = initializeApp(firebaseConfig);
   db = getDatabase(app);
+  auth = getAuth(app);
 } catch {
   console.warn('Firebase not configured — running in local-only mode.');
 }
 
-export { db };
+export { db, auth };

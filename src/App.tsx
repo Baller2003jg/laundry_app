@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Login from './Login';
 import MachineSelector from './components/MachineSelector';
-import { db } from './firebase';
+import { db, auth } from './firebase';
 import { ref, set, onValue, remove } from 'firebase/database';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 type WashType = 'quick' | 'bedding' | 'rinse' | 'regular';
 type DryerType = 'quick' | 'wrinkle' | 'regular';
@@ -76,18 +77,32 @@ function clearIntervals<T extends { intervalId?: number | null }>(settings: Reco
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [userEmail, setUserEmail] = useState('');
-  const [activeTab, setActiveTab] = useState<'machines' | 'qr'>('machines');
+  const [activeTab, setActiveTab] = useState<'machines' | 'qr' | 'remote'>('machines');
   const [showContact, setShowContact] = useState(false);
   const [showLocations, setShowLocations] = useState(false);
   const [startedPopup, setStartedPopup] = useState<{ washers: string[], dryers: string[] } | null>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-login if user is saved in localStorage
+  // Auto-login: Firebase Auth handles session persistence (local or session storage)
   useEffect(() => {
-    const savedUser = localStorage.getItem('laundryAppUser');
-    if (savedUser) {
-      setLoggedIn(true);
-      setUserEmail(savedUser);
+    if (auth) {
+      const unsub = onAuthStateChanged(auth, (user) => {
+        if (user?.email) {
+          setLoggedIn(true);
+          setUserEmail(user.email);
+        } else {
+          setLoggedIn(false);
+          setUserEmail('');
+        }
+      });
+      return unsub;
+    } else {
+      // Fallback for test/offline environments
+      const savedUser = localStorage.getItem('laundryAppUser');
+      if (savedUser) {
+        setLoggedIn(true);
+        setUserEmail(savedUser);
+      }
     }
   }, []);
 
@@ -265,6 +280,9 @@ export default function App() {
 
   function logout() {
     localStorage.removeItem('laundryAppUser');
+    if (auth) {
+      signOut(auth).catch(() => {});
+    }
     setLoggedIn(false);
     setUserEmail('');
     setSelectedWashers([]);
@@ -364,6 +382,74 @@ export default function App() {
     setSelectedDryers((prev) => prev.filter((p) => p !== id));
   }
 
+  function remoteStartWasher(id: string) {
+    const s = washerSettings[id];
+    if (!s || s.running || s.currentUser !== userEmail) return;
+    const intervalId = window.setInterval(() => {
+      setWasherSettings((current) => {
+        const machine = current[id];
+        if (!machine || !machine.running) return current;
+        const newRemaining = machine.remaining - 1;
+        if (newRemaining <= 0) {
+          if (machine.sendText && machine.phone) sendTextNotification(machine.phone, 'washer');
+          if (machine.intervalId) window.clearInterval(machine.intervalId);
+          return { ...current, [id]: { ...machine, remaining: 0, intervalId: null } };
+        }
+        return { ...current, [id]: { ...machine, remaining: newRemaining } };
+      });
+    }, 1000);
+    setWasherSettings((prev) => {
+      const updated = { ...prev, [id]: { ...prev[id], running: true, intervalId, currentUser: userEmail } };
+      writeMachine('washers', id, updated[id]);
+      return updated;
+    });
+  }
+
+  function remoteStopWasher(id: string) {
+    setWasherSettings((prev) => {
+      const s = prev[id];
+      if (!s || s.currentUser !== userEmail) return prev;
+      if (s.intervalId) window.clearInterval(s.intervalId);
+      const updated = { ...prev, [id]: { ...s, running: false, intervalId: null } };
+      writeMachine('washers', id, updated[id]);
+      return updated;
+    });
+  }
+
+  function remoteStartDryer(id: string) {
+    const s = dryerSettings[id];
+    if (!s || s.running || s.currentUser !== userEmail) return;
+    const intervalId = window.setInterval(() => {
+      setDryerSettings((current) => {
+        const machine = current[id];
+        if (!machine || !machine.running) return current;
+        const newRemaining = machine.remaining - 1;
+        if (newRemaining <= 0) {
+          if (machine.sendText && machine.phone) sendTextNotification(machine.phone, 'dryer');
+          if (machine.intervalId) window.clearInterval(machine.intervalId);
+          return { ...current, [id]: { ...machine, remaining: 0, intervalId: null } };
+        }
+        return { ...current, [id]: { ...machine, remaining: newRemaining } };
+      });
+    }, 1000);
+    setDryerSettings((prev) => {
+      const updated = { ...prev, [id]: { ...prev[id], running: true, intervalId, currentUser: userEmail } };
+      writeMachine('dryers', id, updated[id]);
+      return updated;
+    });
+  }
+
+  function remoteStopDryer(id: string) {
+    setDryerSettings((prev) => {
+      const s = prev[id];
+      if (!s || s.currentUser !== userEmail) return prev;
+      if (s.intervalId) window.clearInterval(s.intervalId);
+      const updated = { ...prev, [id]: { ...s, running: false, intervalId: null } };
+      writeMachine('dryers', id, updated[id]);
+      return updated;
+    });
+  }
+
   function sendTextNotification(phone: string, machineType: string) {
     if (phone && /^\d{10}$/.test(phone)) {
       // In a real app, this would call an SMS API (like Twilio)
@@ -373,41 +459,33 @@ export default function App() {
   }
 
   function submit() {
-    // Start all selected washers
+    // Create intervals outside the state updater to avoid React StrictMode double-invocation
+    const washerIntervals: Record<string, number> = {};
+    for (const id of selectedWashers) {
+      if (!washerSettings[id]?.running) {
+        washerIntervals[id] = window.setInterval(() => {
+          setWasherSettings((current) => {
+            const machine = current[id];
+            if (!machine || !machine.running) return current;
+            const newRemaining = machine.remaining - 1;
+            if (newRemaining <= 0) {
+              if (machine.sendText && machine.phone) sendTextNotification(machine.phone, 'washer');
+              if (machine.intervalId) window.clearInterval(machine.intervalId);
+              return { ...current, [id]: { ...machine, remaining: 0, intervalId: null } };
+            }
+            return { ...current, [id]: { ...machine, remaining: newRemaining } };
+          });
+        }, 1000);
+      }
+    }
     setWasherSettings((prev) => {
       const updated = { ...prev };
       for (const id of selectedWashers) {
-        if (!updated[id]?.running) {
-          const intervalId = window.setInterval(() => {
-            setWasherSettings((current) => {
-              const machine = current[id];
-              if (!machine) return current;
-              
-              const newRemaining = machine.remaining - 1;
-              
-              if (newRemaining <= 0) {
-                // Timer done - send notification
-                if (machine.sendText && machine.phone) {
-                  sendTextNotification(machine.phone, 'washer');
-                }
-                if (machine.intervalId) window.clearInterval(machine.intervalId);
-                return {
-                  ...current,
-                  [id]: { ...machine, remaining: 0, intervalId: null }
-                };
-              }
-              
-              return {
-                ...current,
-                [id]: { ...machine, remaining: newRemaining }
-              };
-            });
-          }, 1000);
-          
+        if (!updated[id]?.running && washerIntervals[id] != null) {
           updated[id] = {
             ...updated[id],
             running: true,
-            intervalId,
+            intervalId: washerIntervals[id],
             currentUser: userEmail,
             reservedBy: updated[id].reservedBy === userEmail ? null : updated[id].reservedBy
           };
@@ -416,40 +494,33 @@ export default function App() {
       }
       return updated;
     });
+
+    const dryerIntervals: Record<string, number> = {};
+    for (const id of selectedDryers) {
+      if (!dryerSettings[id]?.running) {
+        dryerIntervals[id] = window.setInterval(() => {
+          setDryerSettings((current) => {
+            const machine = current[id];
+            if (!machine || !machine.running) return current;
+            const newRemaining = machine.remaining - 1;
+            if (newRemaining <= 0) {
+              if (machine.sendText && machine.phone) sendTextNotification(machine.phone, 'dryer');
+              if (machine.intervalId) window.clearInterval(machine.intervalId);
+              return { ...current, [id]: { ...machine, remaining: 0, intervalId: null } };
+            }
+            return { ...current, [id]: { ...machine, remaining: newRemaining } };
+          });
+        }, 1000);
+      }
+    }
     setDryerSettings((prev) => {
       const updated = { ...prev };
       for (const id of selectedDryers) {
-        if (!updated[id]?.running) {
-          const intervalId = window.setInterval(() => {
-            setDryerSettings((current) => {
-              const machine = current[id];
-              if (!machine) return current;
-              
-              const newRemaining = machine.remaining - 1;
-              
-              if (newRemaining <= 0) {
-                // Timer done - send notification
-                if (machine.sendText && machine.phone) {
-                  sendTextNotification(machine.phone, 'dryer');
-                }
-                if (machine.intervalId) window.clearInterval(machine.intervalId);
-                return {
-                  ...current,
-                  [id]: { ...machine, remaining: 0, intervalId: null }
-                };
-              }
-              
-              return {
-                ...current,
-                [id]: { ...machine, remaining: newRemaining }
-              };
-            });
-          }, 1000);
-          
+        if (!updated[id]?.running && dryerIntervals[id] != null) {
           updated[id] = {
             ...updated[id],
             running: true,
-            intervalId,
+            intervalId: dryerIntervals[id],
             currentUser: userEmail,
             reservedBy: updated[id].reservedBy === userEmail ? null : updated[id].reservedBy
           };
@@ -477,7 +548,10 @@ export default function App() {
   }, []);
 
   function buildMachineStatus(currentUserName: string | null, reservedBy: string | null, running: boolean, remaining: number) {
-    if (currentUserName && running) {
+    if (currentUserName) {
+      if (!running) {
+        return `In use by ${currentUserName} - paused (${formatTime(remaining)})`;
+      }
       return remaining > 0
         ? `In use by ${currentUserName} - ${formatTime(remaining)}`
         : `In use by ${currentUserName} - ready to complete`;
@@ -491,7 +565,7 @@ export default function App() {
   function renderReservationDetails(machineId: string, currentUserName: string | null, reservedBy: string | null, onReserve: (id: string) => void, onCancel: (id: string) => void, onComplete?: (id: string) => void, running?: boolean) {
     const canReserve = Boolean(currentUserName) && currentUserName !== userEmail && !reservedBy;
     const canCancel = reservedBy === userEmail;
-    const canComplete = Boolean(onComplete && running && currentUserName === userEmail);
+    const canComplete = Boolean(onComplete && currentUserName === userEmail);
 
     return (
       <div className="reservation-panel">
@@ -513,11 +587,11 @@ export default function App() {
   }
 
   const washerDisabledIds = Object.entries(washerSettings)
-    .filter(([, machine]) => machine.running || (!machine.currentUser && !!machine.reservedBy && machine.reservedBy !== userEmail))
+    .filter(([, machine]) => machine.currentUser || (!machine.currentUser && !!machine.reservedBy && machine.reservedBy !== userEmail))
     .map(([id]) => id);
 
   const dryerDisabledIds = Object.entries(dryerSettings)
-    .filter(([, machine]) => machine.running || (!machine.currentUser && !!machine.reservedBy && machine.reservedBy !== userEmail))
+    .filter(([, machine]) => machine.currentUser || (!machine.currentUser && !!machine.reservedBy && machine.reservedBy !== userEmail))
     .map(([id]) => id);
 
   const washerAvailableCount = washers.filter((m) => {
@@ -547,7 +621,7 @@ export default function App() {
   return (
     <>
       <nav className="navbar">
-        <div className="nav-title">HT Laundry app</div>
+        <img src="/htu-logo-nav.png" alt="Huston-Tillotson University" className="nav-htu-logo" />
         <div className="nav-links">
           <a href="#" className="nav-link active">Home</a>
           <a href="#" className="nav-link" onClick={(e) => { e.preventDefault(); setShowLocations(true); }}>Locations</a>
@@ -630,6 +704,15 @@ export default function App() {
               >
                 Scan QR Code
               </button>
+              {Object.values(washerSettings).some(s => s.currentUser === userEmail) ||
+               Object.values(dryerSettings).some(s => s.currentUser === userEmail) ? (
+                <button
+                  className={`tab remote-tab ${activeTab === 'remote' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('remote')}
+                >
+                  ⚡ Remote
+                </button>
+              ) : null}
             </div>
             {activeTab === 'machines' && (
               <div className="subtitle">Choose up to {maxPerGroup} washers and up to {maxPerGroup} dryers currently in use.</div>
@@ -669,52 +752,53 @@ export default function App() {
                   const s = washerSettings[m.id];
                   if (!s) return null;
                   const phoneValid = /^\d{10}$/.test(s.phone);
-                  let phoneInputArea = null;
-                  if (s.sendText) {
-                    phoneInputArea = (
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        pattern="\d*"
-                        maxLength={10}
-                        placeholder="Phone (10 digits)"
-                        value={s.phone}
-                        style={{ minWidth: 120, fontSize: 13, border: phoneValid || !s.phone ? '1px solid #ccc' : '1px solid #e00' }}
-                        onChange={(e) => {
-                          const val = e.target.value.replace(/[^\d]/g, '');
-                          setWasherSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], phone: val } }));
-                        }}
-                      />
-                    );
-                  }
                   return (
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                      <select
-                        aria-label={`washer-options-${m.id}`}
-                        value={s.type}
-                        onChange={(e) => setWasherSettings((prev) => ({
-                          ...prev,
-                          [m.id]: {
-                            ...prev[m.id],
-                            type: e.target.value as WashType,
-                            remaining: getWasherDuration(e.target.value as WashType)
-                          }
-                        }))}
-                      >
-                        <option value="rinse">Rinse only (10 min)</option>
-                        <option value="quick">Quick wash (15 min)</option>
-                        <option value="bedding">Bedding (40 min)</option>
-                        <option value="regular">Regular wash (30 min)</option>
-                      </select>
-                      <label style={{ fontSize: 13 }}>
-                        <input
-                          type="checkbox"
-                          checked={s.sendText}
-                          onChange={(e) => setWasherSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], sendText: e.target.checked } }))}
-                        />
-                        &nbsp;Send text when done
-                      </label>
-                      {phoneInputArea}
+                    <div className="machine-options">
+                      <div className="cycle-select-wrapper">
+                        <select
+                          className="cycle-select"
+                          aria-label={`washer-options-${m.id}`}
+                          value={s.type}
+                          onChange={(e) => setWasherSettings((prev) => ({
+                            ...prev,
+                            [m.id]: {
+                              ...prev[m.id],
+                              type: e.target.value as WashType,
+                              remaining: getWasherDuration(e.target.value as WashType)
+                            }
+                          }))}
+                        >
+                          <option value="rinse">🔄 Rinse only — 10 min</option>
+                          <option value="quick">⚡ Quick wash — 15 min</option>
+                          <option value="regular">👕 Regular wash — 30 min</option>
+                          <option value="bedding">🛏 Bedding — 40 min</option>
+                        </select>
+                      </div>
+                      <div className="text-notify-row">
+                        <label className="text-toggle-label">
+                          <input
+                            type="checkbox"
+                            checked={s.sendText}
+                            onChange={(e) => setWasherSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], sendText: e.target.checked } }))}
+                          />
+                          Text me when done
+                        </label>
+                        {s.sendText && (
+                          <input
+                            className={`phone-input${s.phone && !phoneValid ? ' invalid' : ''}`}
+                            type="text"
+                            inputMode="numeric"
+                            pattern="\d*"
+                            maxLength={10}
+                            placeholder="10-digit number"
+                            value={s.phone}
+                            onChange={(e) => {
+                              const val = e.target.value.replace(/[^\d]/g, '');
+                              setWasherSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], phone: val } }));
+                            }}
+                          />
+                        )}
+                      </div>
                     </div>
                   );
                 }}
@@ -749,48 +833,48 @@ export default function App() {
                   const s = dryerSettings[m.id];
                   if (!s) return null;
                   const phoneValid = /^\d{10}$/.test(s.phone);
-                  let phoneInputArea = null;
-                  if (s.sendText) {
-                    phoneInputArea = (
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        pattern="\d*"
-                        maxLength={10}
-                        placeholder="Phone (10 digits)"
-                        value={s.phone}
-                        style={{ minWidth: 120, fontSize: 13, border: phoneValid || !s.phone ? '1px solid #ccc' : '1px solid #e00' }}
-                        onChange={(e) => {
-                          const val = e.target.value.replace(/[^\d]/g, '');
-                          setDryerSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], phone: val } }));
-                        }}
-                      />
-                    );
-                  }
                   return (
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
-                      <select
-                        aria-label={`dryer-options-${m.id}`}
-                        value={s.type}
-                        onChange={(e) => {
-                          const val = e.target.value as DryerType;
-                          const remaining = getDryerDuration(val);
-                          setDryerSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], type: val, remaining } }));
-                        }}
-                      >
-                        <option value="quick">Quick dry (15 min)</option>
-                        <option value="wrinkle">Wrinkle release (20 min)</option>
-                        <option value="regular">Regular dry (40 min)</option>
-                      </select>
-                      <label style={{ fontSize: 13 }}>
-                        <input
-                          type="checkbox"
-                          checked={s.sendText}
-                          onChange={(e) => setDryerSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], sendText: e.target.checked } }))}
-                        />
-                        &nbsp;Send text when done
-                      </label>
-                      {phoneInputArea}
+                    <div className="machine-options">
+                      <div className="cycle-select-wrapper">
+                        <select
+                          className="cycle-select"
+                          aria-label={`dryer-options-${m.id}`}
+                          value={s.type}
+                          onChange={(e) => {
+                            const val = e.target.value as DryerType;
+                            setDryerSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], type: val, remaining: getDryerDuration(val) } }));
+                          }}
+                        >
+                          <option value="quick">⚡ Quick dry — 15 min</option>
+                          <option value="wrinkle">✨ Wrinkle release — 20 min</option>
+                          <option value="regular">🔥 Regular dry — 40 min</option>
+                        </select>
+                      </div>
+                      <div className="text-notify-row">
+                        <label className="text-toggle-label">
+                          <input
+                            type="checkbox"
+                            checked={s.sendText}
+                            onChange={(e) => setDryerSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], sendText: e.target.checked } }))}
+                          />
+                          Text me when done
+                        </label>
+                        {s.sendText && (
+                          <input
+                            className={`phone-input${s.phone && !phoneValid ? ' invalid' : ''}`}
+                            type="text"
+                            inputMode="numeric"
+                            pattern="\d*"
+                            maxLength={10}
+                            placeholder="10-digit number"
+                            value={s.phone}
+                            onChange={(e) => {
+                              const val = e.target.value.replace(/[^\d]/g, '');
+                              setDryerSettings((prev) => ({ ...prev, [m.id]: { ...prev[m.id], phone: val } }));
+                            }}
+                          />
+                        )}
+                      </div>
                     </div>
                   );
                 }}
@@ -801,6 +885,50 @@ export default function App() {
               <button className="btn secondary" onClick={resetAll}>Reset all</button>
             </div>
           </>
+        )}
+        {activeTab === 'remote' && (
+          <div className="remote-panel">
+            <h2 className="remote-title">Remote Control</h2>
+            <p className="remote-subtitle">Start or stop your machines remotely.</p>
+            <div className="remote-machines">
+              {Object.entries(washerSettings)
+                .filter(([, s]) => s.currentUser === userEmail)
+                .map(([id, s]) => (
+                  <div key={id} className={`remote-card ${s.running ? 'running' : 'paused'}`}>
+                    <div className="remote-card-name">{id.replace('washer-', 'Washer ').toUpperCase()}</div>
+                    <div className="remote-card-type">🫧 {s.type.charAt(0).toUpperCase() + s.type.slice(1)} wash</div>
+                    <div className="remote-card-timer">{formatTime(s.remaining)}</div>
+                    <div className="remote-card-status">{s.running ? '● Running' : '⏸ Paused'}</div>
+                    <div className="remote-card-actions">
+                      {!s.running && (
+                        <button className="btn primary remote-btn" onClick={() => remoteStartWasher(id)}>▶ Start</button>
+                      )}
+                      {s.running && (
+                        <button className="btn secondary remote-btn" onClick={() => remoteStopWasher(id)}>⏹ Stop</button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              {Object.entries(dryerSettings)
+                .filter(([, s]) => s.currentUser === userEmail)
+                .map(([id, s]) => (
+                  <div key={id} className={`remote-card ${s.running ? 'running' : 'paused'}`}>
+                    <div className="remote-card-name">{id.replace('dryer-', 'Dryer ').toUpperCase()}</div>
+                    <div className="remote-card-type">🔥 {s.type.charAt(0).toUpperCase() + s.type.slice(1)} dry</div>
+                    <div className="remote-card-timer">{formatTime(s.remaining)}</div>
+                    <div className="remote-card-status">{s.running ? '● Running' : '⏸ Paused'}</div>
+                    <div className="remote-card-actions">
+                      {!s.running && (
+                        <button className="btn primary remote-btn" onClick={() => remoteStartDryer(id)}>▶ Start</button>
+                      )}
+                      {s.running && (
+                        <button className="btn secondary remote-btn" onClick={() => remoteStopDryer(id)}>⏹ Stop</button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+            </div>
+          </div>
         )}
         {activeTab === 'qr' && (
         <div className="qr-content">
