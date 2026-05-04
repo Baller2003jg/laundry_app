@@ -148,6 +148,7 @@ If your cycle is nearly done and you need more time, an **Extend** option appear
 ### QR Code Tab
 
 Use your device camera to scan a QR code posted on a machine. This identifies the machine ID and can pre-select it in the Machines tab.
+<img width="1295" height="616" alt="qr" src="https://github.com/user-attachments/assets/ce25be1f-3b34-4380-9739-6870e99b3cb0" />
 
 ### Remote Start Tab
 
@@ -168,6 +169,10 @@ The Remote Start tab allows starting a machine cycle without being physically ne
 ### Machines Tab — Main View
 
 The main machines tab shows two panels (Washers / Dryers) with availability badges and individual machine rows. Each row shows the machine name, status, and — when selected — cycle settings and a Start button.
+<img width="1307" height="543" alt="remote" src="https://github.com/user-attachments/assets/495196d5-f6c6-43a4-a3ec-e4640e9ae95a" />
+<img width="1307" height="543" alt="remote" src="https://github.com/user-attachments/assets/11edab34-d89b-45f2-a473-d94d9847a03b" />
+<img width="1307" height="543" alt="remote" src="https://github.com/user-attachments/assets/e3de8389-7328-40e1-a36c-8b7ecb8377aa" />
+<img width="1364" height="827" alt="main" src="https://github.com/user-attachments/assets/60961d8b-f430-45bb-8497-4ac9c79bc79e" />
 
 ### Active Timer Summary
 
