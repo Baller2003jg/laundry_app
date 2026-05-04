@@ -160,7 +160,8 @@ The Remote Start tab allows starting a machine cycle without being physically ne
 > Screenshots below show the key screens of the app.
 
 ### Login Screen
-![Login screen showing HTU email and password fields with Keep me signed in checkbox](../public/htu-logo.png)
+<img width="1506" height="842" alt="image" src="https://github.com/user-attachments/assets/36b573e3-4187-4e4c-8c9c-5e9cf0fa4f0d" />
+
 
 *Users log in with their `@htu.edu` email and a password. An account is auto-created on first login.*
 
