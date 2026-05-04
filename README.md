@@ -5,20 +5,24 @@ This is a small React + Vite app that demonstrates selecting up to 2 washers and
 Quick start (Windows PowerShell):
 
 ```powershell
-cd c:\Users\13182\Desktop\code\laundry_app
+cd c:\Users\13182\Desktop\laundry_app
 npm install
 npm run dev
 ```
 
-Open http://localhost:5173 (or the address shown by Vite). You can select up to 5 washers and 5 dryers concurrently. Click Submit to view the selected machine ids.
+Open http://localhost:5173 (or the address shown by Vite). You can select and start up to 2 washers and 2 dryers at a time (8 of each available). Machine state is synced in real time via Firebase Realtime Database.
 
 ## Features
 
-- User login with "Keep me signed in" option
-- Select and manage washers and dryers
-- Set wash/dry types (e.g., quick wash, bedding)
-- Enter phone number for push notification when timer is done
-- Timers for each machine, with a summary of active timers at the bottom
+- User login with "Keep me signed in" option (Firebase Authentication)
+- 8 washers and 8 dryers; select and start up to 2 of each at a time
+- Reserve machines for another user
+- Set wash/dry cycle types (quick, regular, bedding, rinse, wrinkle-release)
+- Enter phone number for push notification when cycle finishes
+- Per-machine countdown timers with a summary of active timers at the bottom
+- Real-time machine state sync across all users via Firebase Realtime Database
+- QR code scanner tab for machine lookup
+- Remote start tab
 - Logout functionality to return to login screen
 
 ## Project Structure
