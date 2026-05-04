@@ -1,248 +1,278 @@
-# Laundry App - User Guide
+# HTU Laundry App — User Guide
 
-Welcome to the Laundry App! This guide will help you get started with managing your laundry machines efficiently.
+Welcome to the HTU Laundry App! This guide covers everything you need to use the app to manage laundry machines on campus.
 
 ## Table of Contents
 1. [Getting Started](#getting-started)
-2. [Using the App](#using-the-app)
+2. [App Overview](#app-overview)
 3. [Machine Selection](#machine-selection)
-4. [Wash & Dry Types](#wash--dry-types)
-5. [Notifications](#notifications)
-6. [FAQ](#faq)
+4. [Cycle Types & Durations](#cycle-types--durations)
+5. [Reserving a Machine](#reserving-a-machine)
+6. [Timers & Notifications](#timers--notifications)
+7. [QR Code & Remote Start Tabs](#qr-code--remote-start-tabs)
+8. [Screenshots](#screenshots)
+9. [Troubleshooting](#troubleshooting)
+10. [FAQ](#faq)
 
 ---
 
 ## Getting Started
 
 ### Logging In
-1. Open the app in your web browser
-2. Enter your email address
-3. Optionally check "Keep me signed in" to stay logged in on future visits
-4. Click "Login"
 
-Your login information is saved locally on your device for convenience.
+1. Open the app in your browser (or visit the live demo link in [DEMO.md](DEMO.md))
+2. Enter your **HTU school email** (must end in `@htu.edu`)
+3. Enter a **password** (minimum 6 characters)
+4. Optionally check **"Keep me signed in"** to stay logged in between visits
+5. Click **Login**
 
-### First Time Users
-- No registration required - simply enter any valid email address
-- Your email is used to identify your session
-- If you check "Keep me signed in", you won't need to log in again on this device
+> **First time?** If your email hasn't been used before, an account is automatically created for you with the password you enter. Use the same email and password every time after that.
+
+### Logging Out
+
+Click the **Logout** button at the top right. Your machine reservations are preserved; only your active selections are cleared.
 
 ---
 
-## Using the App
+## App Overview
 
-### Dashboard Overview
-Once logged in, you'll see two main sections:
-- **Washers**: Select and manage washing machines
-- **Dryers**: Select and manage drying machines
+After logging in you'll see three tabs:
 
-Each section allows you to:
-- Select up to 2 machines simultaneously
-- Configure wash/dry settings
-- Start timers
-- Monitor progress
+| Tab | Purpose |
+|---|---|
+| **Machines** | Select, start, and monitor washers and dryers |
+| **QR Code** | Scan a machine QR code to identify it |
+| **Remote Start** | Start a machine remotely |
+
+The **Machines tab** is the main view. It has two panels — **Washers** and **Dryers** — each showing 8 machines.
+
+At the top of each panel you'll see:
+- **Available** — number of machines ready to use
+- **Open reservation spots** — machines reserved and waiting for a user
+
+At the bottom of the screen an **active-timer summary** shows all cycles currently running across all users.
 
 ---
 
 ## Machine Selection
 
-### How to Select Machines
+### How to Select a Machine
 
-1. **Click on a machine** to select it
-   - Available machines are shown with full opacity
-   - Selected machines are highlighted
+1. Click the checkbox next to a machine name
+2. Its settings panel expands below the machine row
+3. Configure your cycle type, notifications, and phone number
+4. Click **Start** to begin the countdown
 
-2. **Selection Limits**
-   - Washers: Up to 2 at a time
-   - Dryers: Up to 2 at a time
-   - Once you reach the limit, other machines will be disabled until you deselect one
+### Selection Limits
 
-3. **Deselecting Machines**
-   - Click on a selected machine again to deselect it
-   - Note: You cannot deselect a machine while it's running
+- Up to **2 washers** and **2 dryers** can be selected per user at a time
+- Machines in use by other users are shown at reduced opacity and cannot be selected
 
-### Machine Status
-- **Available** - Ready to use
-- **Running** - Currently in use with active timer
-- **Timer Display** - Shows remaining time (MM:SS format)
+### Machine Status Labels
 
----
+| Status | Meaning |
+|---|---|
+| Available | Ready to use — no one is using it |
+| Running | In use with an active countdown timer |
+| Reserved | Reserved by another user; waiting for them to start |
+| In Use (You) | You currently have this machine selected or running |
 
-## Wash & Dry Types
+### Deselecting a Machine
 
-### Washer Settings
-
-After selecting a washer, configure the following:
-
-**Wash Type**:
-- **Regular Wash** (30 minutes) - Standard cycle for everyday laundry
-- **Quick Wash** (15 minutes) - Fast cycle for lightly soiled items
-- **Bedding** (30 minutes) - Heavy-duty cycle for sheets and comforters
-- **Rinse** (30 minutes) - Rinse-only cycle
-
-### Dryer Settings
-
-After selecting a dryer, choose from:
-
-**Dry Type**:
-- **Regular Dry** (30 minutes) - Standard drying cycle
-- **Quick Dry** (15 minutes) - Fast cycle for small loads
-- **Wrinkle Prevent** (30 minutes) - Gentle tumbling to prevent wrinkles
+Click the checkbox again. You **cannot** deselect a machine while its timer is running — you must wait for the cycle to complete or use the global **Reset All** action.
 
 ---
 
-## Notifications
+## Cycle Types & Durations
 
-### Setting Up Text Notifications
+### Washer Cycles
 
-1. Select a machine
-2. Check the "Send text when done" option
-3. Enter your 10-digit phone number (e.g., 5551234567)
-4. When the timer completes, you'll receive a text notification
+| Cycle | Duration | Best For |
+|---|---|---|
+| Regular Wash | 30 minutes | Everyday laundry |
+| Quick Wash | 15 minutes | Lightly soiled items or small loads |
+| Bedding | 40 minutes | Sheets, comforters, heavy items |
+| Rinse | 10 minutes | Rinse-only, no detergent |
 
-**Requirements**:
-- Phone number must be exactly 10 digits
-- No dashes or spaces needed
-- U.S. phone numbers only
+### Dryer Cycles
 
-### Timer Management
+| Cycle | Duration | Best For |
+|---|---|---|
+| Regular Dry | 40 minutes | Standard loads |
+| Quick Dry | 15 minutes | Small loads or items already partially dry |
+| Wrinkle-Release | 20 minutes | Gentle tumbling to remove wrinkles |
 
-**Starting a Timer**:
-- Configure your wash/dry settings
-- Click "Start" to begin the timer
-- The machine status will change to "Running"
+---
 
-**Monitoring Progress**:
-- Active timers are displayed on each machine
-- A summary of all running machines appears at the bottom of the screen
-- Time format: MM:SS (minutes:seconds)
+## Reserving a Machine
 
-**Completing a Cycle**:
-- When the timer reaches 00:00, it will automatically stop
-- If notifications are enabled, you'll receive a text
-- The machine becomes available for the next user
+If you want to hold a machine for someone else (e.g., a roommate):
 
-### Reset All
-Use the "Reset All" button to:
-- Stop all running timers
-- Clear all selections
-- Reset settings to default
+1. Select the machine
+2. Check the **"Reserve for another user"** checkbox
+3. Enter the other user's HTU email
+4. Click **Reserve**
+
+The machine will show as **Reserved** to all other users and be held until the reserved user logs in and starts their cycle.
+
+---
+
+## Timers & Notifications
+
+### Starting a Timer
+
+1. Select a machine and choose your cycle type
+2. (Optional) Check **"Send text when done"** and enter your 10-digit phone number (digits only, no dashes — e.g., `5551234567`)
+3. Click **Start**
+
+### Monitoring Progress
+
+- The timer counts down in **MM:SS** format on the machine row
+- The **active-timer summary** at the bottom shows all your running machines at a glance
+- All other users see your machine as "Running" in real time
+
+### When a Cycle Finishes
+
+- The timer reaches **00:00** and stops automatically
+- If text notifications were enabled, a message is sent to your phone
+- The machine becomes **Available** again for the next user
+
+### Extending Time
+
+If your cycle is nearly done and you need more time, an **Extend** option appears near the end of the cycle.
+
+---
+
+## QR Code & Remote Start Tabs
+
+### QR Code Tab
+
+Use your device camera to scan a QR code posted on a machine. This identifies the machine ID and can pre-select it in the Machines tab.
+
+### Remote Start Tab
+
+The Remote Start tab allows starting a machine cycle without being physically next to it. Select the machine ID and your cycle settings, then confirm to start remotely.
+
+---
+
+## Screenshots
+
+> Screenshots below show the key screens of the app.
+
+### Login Screen
+![Login screen showing HTU email and password fields with Keep me signed in checkbox](../public/htu-logo.png)
+
+*Users log in with their `@htu.edu` email and a password. An account is auto-created on first login.*
+
+### Machines Tab — Main View
+
+The main machines tab shows two panels (Washers / Dryers) with availability badges and individual machine rows. Each row shows the machine name, status, and — when selected — cycle settings and a Start button.
+
+### Active Timer Summary
+
+A sticky bar at the bottom of the Machines tab shows all currently running timers for the logged-in user, including machine name and remaining time.
+
+---
+
+## Troubleshooting
+
+### The app won't load
+- Check your internet connection
+- Try refreshing the page (`F5` or `Ctrl+R`)
+- Clear your browser cache and try again
+- Try a different browser (Chrome, Firefox, Edge, Safari all supported)
+
+### "Please enter a valid HTU school email" error
+- Your email must end in `@htu.edu` — personal emails are not accepted
+
+### "Incorrect password" error
+- Make sure caps lock is off
+- Use the exact password you set the first time you logged in
+- Passwords must be at least 6 characters
+
+### I forgot my password
+- Currently there is no self-service password reset UI. Contact your facility administrator to have your account reset in the Firebase console.
+
+### Machines aren't updating / timer is frozen
+- Check your internet connection — the app requires an active connection for real-time sync
+- Refresh the page; your running timers will resume from their last synced state
+
+### I can't select a machine
+- You may already have 2 washers or 2 dryers selected
+- The machine may be in use by another user
+- Deselect one of your current machines first
+
+### My text notification didn't arrive
+- Make sure "Send text when done" was checked **before** clicking Start
+- Verify the phone number is exactly 10 digits with no spaces or dashes
+- U.S. numbers only; standard carrier rates may apply
+
+### The timer finished but the machine still shows "Running"
+- Refresh the page to force a state sync with Firebase
 
 ---
 
 ## FAQ
 
-### General Questions
+### General
 
 **Q: Do I need to create an account?**  
-A: No, simply enter your email address to log in. No password or registration required.
+A: No sign-up form needed. Enter your `@htu.edu` email and a password — your account is created automatically on first login.
 
-**Q: Is my data saved?**  
-A: Your login email is saved locally in your browser if you select "Keep me signed in". Machine selections and settings are session-based.
+**Q: What if I forget my password?**  
+A: There is no self-service password reset at this time. Contact your facility administrator.
+
+**Q: Is my data saved between sessions?**  
+A: If you check "Keep me signed in", you'll be automatically logged back in next time. Machine state is always synced live from Firebase, so you'll see the current real-world status on every login.
 
 **Q: Can other users see my selections?**  
-A: No, each user has their own view. However, machine availability is shared in real-time.
+A: Yes — machine occupancy is shared in real time. All users see which machines are Available, Running, or Reserved.
+
+**Q: Can I use the app on my phone?**  
+A: Yes. The app is responsive and works on phones, tablets, and desktops.
 
 ---
 
 ### Machine Selection
 
-**Q: Why can't I select more machines?**  
-A: You can only select up to 2 washers and 2 dryers at a time. Deselect a machine to choose a different one.
+**Q: Why can't I select more than 2 washers?**  
+A: The limit is 2 washers and 2 dryers per user at a time to keep things fair. Deselect a machine to choose a different one.
 
-**Q: Why can't I deselect a machine?**  
-A: Running machines cannot be deselected until their cycle completes. Wait for the timer to finish or use "Reset All".
+**Q: Can I deselect a machine that's running?**  
+A: No. Running machines are locked until the cycle completes.
 
-**Q: What does "Available" mean?**  
-A: The machine is not currently in use and can be selected.
-
-**Q: Can I switch machines mid-cycle?**  
-A: No, once a timer is running, you must wait for it to complete before selecting a different machine.
+**Q: What does "Reserved" mean?**  
+A: Another user has held the machine for a specific person. It will become available once that person starts their cycle.
 
 ---
 
 ### Timers & Cycles
 
-**Q: How long do cycles take?**  
-A: 
-- Quick cycles: 15 minutes
-- Regular cycles: 30 minutes
-- All other cycles: 30 minutes
+**Q: How long does each cycle take?**  
+A: See the [Cycle Types & Durations](#cycle-types--durations) table above. Ranges from 10 minutes (Rinse) to 40 minutes (Bedding / Regular Dry).
 
-**Q: Can I pause or stop a timer?**  
-A: Individual timers cannot be paused. Use "Reset All" to stop all timers at once.
+**Q: Can I pause a timer?**  
+A: Individual timers cannot be paused. Use **Reset All** to stop all your timers if needed.
 
-**Q: What happens when the timer finishes?**  
-A: The machine becomes available again, and you'll receive a notification if enabled.
+**Q: What happens when my cycle finishes?**  
+A: The machine becomes Available and you receive a text if notifications were set up.
 
 **Q: Can I change settings after starting?**  
-A: No, settings are locked once you start the timer. To change settings, use "Reset All" and start over.
+A: No — settings are locked once a cycle begins. Stop the cycle with Reset All and start over to change settings.
 
 ---
 
 ### Notifications
 
 **Q: How do text notifications work?**  
-A: Enter your 10-digit phone number and check "Send text when done". You'll receive a text when your cycle completes.
+A: Check "Send text when done", enter your 10-digit phone number, then start the cycle. A text is sent automatically when the timer hits 00:00.
 
-**Q: What if I enter the wrong phone number?**  
-A: You must reset and restart the cycle with the correct number.
-
-**Q: Why didn't I receive a notification?**  
-A: Common issues:
-- Phone number format incorrect (must be 10 digits, no spaces or dashes)
-- "Send text when done" wasn't checked
-- Network or service issues
+**Q: What format should my phone number be in?**  
+A: 10 digits, no spaces, no dashes — e.g., `5551234567`. U.S. numbers only.
 
 **Q: Are notifications free?**  
-A: Standard text message rates may apply depending on your mobile carrier.
+A: Standard carrier text message rates may apply.
 
 ---
 
-### Troubleshooting
-
-**Q: The app isn't loading**  
-A: Try these steps:
-1. Refresh your browser
-2. Clear your browser cache
-3. Check your internet connection
-4. Try a different browser
-
-**Q: I'm logged out unexpectedly**  
-A: This can happen if:
-- You cleared your browser data
-- "Keep me signed in" wasn't checked
-- Using private/incognito mode
-
-**Q: Machines aren't updating**  
-A: Refresh the page or check your internet connection.
-
-**Q: How do I log out?**  
-A: Currently, clear your browser's local storage or use private browsing mode. A logout button may be added in future updates.
-
----
-
-### Tips & Best Practices
-
-**Q: Any tips for using the app efficiently?**  
-A: 
-- Enable text notifications so you don't have to watch the timer
-- Use Quick Wash/Dry for small loads to save time
-- Plan ahead - select your next machine before your current cycle finishes
-- Use the timer summary at the bottom to track multiple loads
-
-**Q: Can I use this on my phone?**  
-A: Yes! The app works on any device with a web browser (desktop, tablet, or mobile).
-
----
-
-## Need Help?
-
-If you're experiencing issues not covered in this guide:
-- Check that you're using a modern web browser (Chrome, Firefox, Safari, Edge)
-- Ensure JavaScript is enabled
-- Contact your facility administrator for technical support
-
----
-
-*Last Updated: March 6, 2026*
+*Last Updated: May 3, 2026*

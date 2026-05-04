@@ -7,7 +7,10 @@ This document provides detailed instructions for installing, compiling, and runn
 - [Dependencies](#dependencies)
 - [Installation Steps](#installation-steps)
 - [Environment Setup](#environment-setup)
+- [Firebase Setup](#firebase-setup-one-time)
 - [Building for Production](#building-for-production)
+- [Deployment Instructions](#deployment-instructions)
+- [Running Tests](#running-tests)
 - [Troubleshooting](#troubleshooting)
 
 ---
@@ -44,23 +47,25 @@ The Laundry App uses the following dependencies:
 ### Production Dependencies
 | Package | Version | Purpose |
 |---------|---------|---------|
+| `firebase` | ^12.12.1 | Firebase Authentication + Realtime Database |
 | `react` | ^18.3.1 | Core React library for building UI |
 | `react-dom` | ^18.3.1 | React DOM rendering |
 
 ### Development Dependencies
 | Package | Version | Purpose |
 |---------|---------|---------|
+| `@testing-library/dom` | ^10.4.1 | DOM testing utilities |
 | `@testing-library/jest-dom` | ^6.0.0 | Custom Jest matchers for DOM testing |
 | `@testing-library/react` | ^14.0.0 | React component testing utilities |
 | `@testing-library/user-event` | ^14.0.0 | User interaction simulation for tests |
 | `@types/node` | ^25.3.3 | TypeScript definitions for Node.js |
 | `@types/react` | ^18.3.28 | TypeScript definitions for React |
 | `@types/react-dom` | ^18.3.7 | TypeScript definitions for React DOM |
-| `@vitejs/plugin-react` | ^4.0.0 | Vite plugin for React support |
-| `jsdom` | ^22.0.0 | DOM implementation for testing |
+| `@vitejs/plugin-react` | ^6.0.1 | Vite plugin for React support |
+| `jsdom` | ^29.1.0 | DOM implementation for testing |
 | `typescript` | ^5.9.3 | TypeScript compiler |
-| `vite` | ^5.1.0 | Fast build tool and dev server |
-| `vitest` | ^1.0.0 | Testing framework |
+| `vite` | ^8.0.10 | Fast build tool and dev server |
+| `vitest` | ^4.1.5 | Testing framework |
 
 ---
 
@@ -147,15 +152,32 @@ Vitest testing configuration - defines test environment and settings.
 
 ### Environment Variables
 
-Currently, the app doesn't require environment variables. If you need to add them in the future:
+The Firebase configuration is embedded directly in `src/firebase.ts` for this project, so **no `.env` file is required** to run the app as-is.
 
-1. Create a `.env` file in the root directory
-2. Add variables with `VITE_` prefix:
-   ```
-   VITE_API_URL=https://your-api-url.com
-   VITE_APP_TITLE=Laundry App
-   ```
-3. Access in code via `import.meta.env.VITE_API_URL`
+If you fork this project and connect it to your own Firebase project, replace the `firebaseConfig` object in `src/firebase.ts` with your own values (found in your Firebase console under **Project Settings → Your apps**):
+
+```ts
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID",
+};
+```
+
+### Firebase Setup (One-Time)
+
+If setting up a new Firebase project:
+
+1. Go to [https://console.firebase.google.com](https://console.firebase.google.com)
+2. Create a new project
+3. Enable **Authentication** → Sign-in method → **Email/Password**
+4. Enable **Realtime Database** → Create database → Start in test mode
+5. Go to **Project Settings → Your apps → Add web app** and copy the config object
+6. Paste the config into `src/firebase.ts`
 
 ---
 
@@ -211,6 +233,60 @@ npm install -g netlify-cli
 # Deploy
 netlify deploy --prod --dir=dist
 ```
+
+---
+
+## Deployment Instructions
+
+### Option 1 — Netlify (Recommended, Free)
+
+1. Build the app:
+   ```bash
+   npm run build
+   ```
+2. Go to [https://app.netlify.com/drop](https://app.netlify.com/drop)
+3. Drag and drop the `dist/` folder onto the page
+4. Netlify gives you a live URL instantly (e.g., `https://your-app.netlify.app`)
+
+For continuous deployment via GitHub:
+```bash
+npm install -g netlify-cli
+netlify login
+netlify init        # link to your GitHub repo
+netlify deploy --prod --dir=dist
+```
+
+### Option 2 — Vercel (Free)
+
+```bash
+npm install -g vercel
+vercel login
+vercel --prod
+```
+
+Vercel auto-detects Vite and sets the output directory to `dist`.
+
+### Option 3 — GitHub Pages
+
+```bash
+npm install --save-dev gh-pages
+```
+
+Add to `package.json` scripts:
+```json
+"deploy": "npm run build && gh-pages -d dist"
+```
+
+Then:
+```bash
+npm run deploy
+```
+
+Your app will be live at `https://<username>.github.io/<repo-name>/`.
+
+### Live Demo
+
+See [DEMO.md](DEMO.md) for the current live demo URL.
 
 ---
 
