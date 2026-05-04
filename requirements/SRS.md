@@ -433,7 +433,8 @@ Entity Relationship Diagram
 <img width="393" height="589" alt="er" src="https://github.com/user-attachments/assets/82f48e5e-7fc9-4a01-8f4f-bbde4895990c" />
 
 Gantt Chart
- <img width="1920" height="1440" alt="HTU_Laundry_App_Gantt_Visual" src="https://github.com/user-attachments/assets/6387c990-d91e-4129-9c97-655d2f4a9f68" />
+ <img width="624" height="387" alt="gannt" src="https://github.com/user-attachments/assets/6ab4b659-7913-4734-893a-38c7f0bcdf65" />
+
 
 Appendix C: Issues List
 The system is currently integrating the QR scanning library ZXing. Testing of machine API control via QR ID is to be determined, and confirmation of the Firebase connection with the IoT devices is also to be determined.
