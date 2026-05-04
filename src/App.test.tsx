@@ -64,4 +64,37 @@ describe('App washer flow', () => {
     expect(within(washerRow).getByText('next@htu.edu')).not.toBeNull()
     expect(within(washerRow).getByText(/next in line/i)).not.toBeNull()
   })
+
+  it('allows a student to reserve Washer 1 while it is in use', async () => {
+    render(<App />)
+    const user = userEvent.setup()
+
+    // First student starts Washer 1
+    await user.type(screen.getByLabelText(/school email/i), 'student1@htu.edu')
+    await user.type(screen.getByLabelText(/password/i), 'password123')
+    await user.click(screen.getByRole('button', { name: /login/i }))
+
+    const [washerLabel] = await screen.findAllByText('WASHER 1')
+    const washerCheckbox = washerLabel.closest('label')?.querySelector('input[type=checkbox]') as HTMLInputElement
+    await user.click(washerCheckbox)
+    await user.click(screen.getByRole('button', { name: /submit machines/i }))
+
+    // Confirm Washer 1 is now in use
+    expect(await screen.findByText(/in use by student1@htu\.edu/i)).not.toBeNull()
+
+    // Log out and log in as a second student
+    await user.click(screen.getByRole('button', { name: /logout/i }))
+    await user.type(screen.getByLabelText(/school email/i), 'student2@htu.edu')
+    await user.type(screen.getByLabelText(/password/i), 'password123')
+    await user.click(screen.getByRole('button', { name: /login/i }))
+
+    // Second student reserves Washer 1
+    const [washerName] = await screen.findAllByText('WASHER 1')
+    const washerRow = washerName.closest('.machine') as HTMLElement
+    await user.click(within(washerRow).getByRole('button', { name: /reserve next/i }))
+
+    // Reservation is confirmed
+    expect(within(washerRow).getByText('student2@htu.edu')).not.toBeNull()
+    expect(within(washerRow).getByText(/next in line/i)).not.toBeNull()
+  })
 })

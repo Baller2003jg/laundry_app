@@ -380,6 +380,9 @@ body{
 .remote-card.paused  .remote-card-status { color: var(--gold); }
 .remote-card-actions { margin-top: 8px; }
 .remote-btn { width: 100%; font-size: 1rem; padding: 10px 0; }
+.add-time-btn { background: #e6a817; color: #1a1a2e; border-color: #e6a817; font-weight: 700; margin-top: 6px; }
+.add-time-btn:hover:not(:disabled) { background: #f0bc30; border-color: #f0bc30; }
+.add-time-btn:disabled { background: #555; border-color: #555; color: #999; cursor: not-allowed; opacity: 0.7; }
 
 /* QR Code Scanner styles */
 .qr-content{padding:40px 20px;text-align:center}

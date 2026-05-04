@@ -16,6 +16,7 @@ type BaseMachineState = {
   intervalId?: number | null;
   currentUser: string | null;
   reservedBy: string | null;
+  timeExtended?: boolean;
 };
 
 type WasherState = BaseMachineState & {
@@ -51,7 +52,8 @@ function createWasherState(): WasherState {
     remaining: DEFAULT_WASHER_SECONDS,
     intervalId: null,
     currentUser: null,
-    reservedBy: null
+    reservedBy: null,
+    timeExtended: false
   };
 }
 
@@ -64,7 +66,8 @@ function createDryerState(): DryerState {
     remaining: DEFAULT_DRYER_SECONDS,
     intervalId: null,
     currentUser: null,
-    reservedBy: null
+    reservedBy: null,
+    timeExtended: false
   };
 }
 
@@ -450,6 +453,26 @@ export default function App() {
     });
   }
 
+  function addTimeWasher(id: string) {
+    setWasherSettings((prev) => {
+      const s = prev[id];
+      if (!s || s.currentUser !== userEmail || s.timeExtended) return prev;
+      const updated = { ...prev, [id]: { ...s, remaining: s.remaining + 600, timeExtended: true } };
+      writeMachine('washers', id, updated[id]);
+      return updated;
+    });
+  }
+
+  function addTimeDryer(id: string) {
+    setDryerSettings((prev) => {
+      const s = prev[id];
+      if (!s || s.currentUser !== userEmail || s.timeExtended) return prev;
+      const updated = { ...prev, [id]: { ...s, remaining: s.remaining + 600, timeExtended: true } };
+      writeMachine('dryers', id, updated[id]);
+      return updated;
+    });
+  }
+
   function sendTextNotification(phone: string, machineType: string) {
     if (phone && /^\d{10}$/.test(phone)) {
       // In a real app, this would call an SMS API (like Twilio)
@@ -677,7 +700,7 @@ export default function App() {
             <h2 style={{ marginTop: 0, marginBottom: 24 }}>Contact Us</h2>
             <div style={{ marginBottom: 16 }}>
               <strong>Student Support</strong><br />
-              <a href="tel:3182316925" style={{ color: '#1a73e8' }}>318-231-6925</a>
+              <a href="tel:5555555555" style={{ color: '#1a73e8' }}>555-555-5555</a>
             </div>
             <div style={{ marginBottom: 24 }}>
               <strong>Huston-Tillotson University</strong><br />
@@ -906,6 +929,12 @@ export default function App() {
                       {s.running && (
                         <button className="btn secondary remote-btn" onClick={() => remoteStopWasher(id)}>⏹ Stop</button>
                       )}
+                      <button
+                        className="btn remote-btn add-time-btn"
+                        onClick={() => addTimeWasher(id)}
+                        disabled={!!s.timeExtended}
+                        title={s.timeExtended ? 'Already used' : 'Add 10 minutes (once only)'}
+                      >+10 min {s.timeExtended ? '✓' : ''}</button>
                     </div>
                   </div>
                 ))}
@@ -924,6 +953,12 @@ export default function App() {
                       {s.running && (
                         <button className="btn secondary remote-btn" onClick={() => remoteStopDryer(id)}>⏹ Stop</button>
                       )}
+                      <button
+                        className="btn remote-btn add-time-btn"
+                        onClick={() => addTimeDryer(id)}
+                        disabled={!!s.timeExtended}
+                        title={s.timeExtended ? 'Already used' : 'Add 10 minutes (once only)'}
+                      >+10 min {s.timeExtended ? '✓' : ''}</button>
                     </div>
                   </div>
                 ))}
